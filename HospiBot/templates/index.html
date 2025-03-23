@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hospibot Chat</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 50px; }
+    #chatbox { width: 600px; height: 400px; border: 1px solid #ccc; padding: 10px; overflow-y: scroll; }
+    .message { margin: 10px 0; }
+    .user { color: blue; }
+    .bot { color: green; }
+    #input-box { width: 600px; padding: 10px; }
+    #send-btn { padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h1>Hospibot</h1>
+  <div id="chatbox"></div>
+  <input type="text" id="input-box" placeholder="Ask about appointments, doctors, records, or health queries." autofocus>
+  <button id="send-btn">Send</button>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const inputBox = document.getElementById("input-box");
+    const sendBtn = document.getElementById("send-btn");
+
+    function appendMessage(sender, text) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message " + sender;
+      msgDiv.textContent = text;
+      chatbox.appendChild(msgDiv);
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    inputBox.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+
+    function sendMessage() {
+      const message = inputBox.value.trim();
+      if (!message) return;
+      appendMessage("user", "You: " + message);
+      inputBox.value = "";
+
+      fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: message })
+      })
+      .then(response => response.json())
+      .then(data => {
+        appendMessage("bot", "Hospibot: " + data.response);
+      })
+      .catch(err => {
+        appendMessage("bot", "Error: " + err);
+      });
+    }
+  </script>
+</body>
+</html>
